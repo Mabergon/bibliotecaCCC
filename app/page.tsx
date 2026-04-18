@@ -27,7 +27,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: 'http://localhost:3000/dashboard',
+        emailRedirectTo: 'https://la-teva-app.vercel.app/auth/callback',
       },
     })
 
