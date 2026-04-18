@@ -24,21 +24,25 @@ export default function LoginPage() {
     }
 
     // 2. Si el codi és OK, enviem el Magic Link de Supabase
+    const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const redirectUrl = "https://biblioteca-ccc.vercel.app/auth/callback";
+    console.log("Intentant redirigir a:", redirectUrl);
+
     const { error } = await supabase.auth.signInWithOtp({
-      email,
+      email: email,
       options: {
-        emailRedirectTo: 'https://biblioteca-ccc.vercel.app/auth/callback',
+        emailRedirectTo: redirectUrl,
       },
-    })
+    });
 
-    if (error) {
-      setMessage(`❌ Error: ${error.message}`)
-    } else {
-      setMessage('✅ T\'hem enviat un enllaç màgic al teu email!')
-    }
-    setLoading(false)
+  if (error) {
+    alert("Error: " + error.message);
+  } else {
+    alert("Correu enviat! Revisa la bústia.");
   }
-
+};
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
