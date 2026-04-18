@@ -26,6 +26,7 @@ export async function GET(request: Request) {
       }
     )
 
+    // Aquest pas és el que intercanvia el codi pel token real
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
@@ -33,5 +34,6 @@ export async function GET(request: Request) {
     }
   }
 
+  // Si no hi ha codi o hi ha error, tornem a la home
   return NextResponse.redirect(`${origin}`)
 }
