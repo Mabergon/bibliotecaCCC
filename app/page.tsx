@@ -23,8 +23,9 @@ export default function LoginPage() {
       return
     }
 
-    // 2. Si el codi és OK, enviem el Magic Link
-    const redirectUrl = "https://biblioteca-ccc.vercel.app/auth/callback"
+    // 2. Si el codi és OK, enviem el Magic Link// Forcem la URL sense espais ni errors
+    const origin = window.location.origin; // Això agafarà https://biblioteca-ccc.vercel.app automàticament
+    const redirectUrl = `${origin}/auth/callback`;
     
     const { error } = await supabase.auth.signInWithOtp({
       email: email,
