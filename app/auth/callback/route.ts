@@ -5,12 +5,9 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/dashboard'
-
+  
   if (code) {
-    // AFEGIM EL AWAIT AQUÍ PERQUÈ COOKIES() ÉS ASÍNCRON ARA
     const cookieStore = await cookies()
-    
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -28,13 +25,15 @@ export async function GET(request: Request) {
         },
       }
     )
-    
+
+    // Aquesta línia és la que treu el '#' i et logueja de veritat
     const { error } = await supabase.auth.exchangeCodeForSession(code)
+    
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      return NextResponse.redirect(`${origin}/dashboard`)
     }
   }
 
-  // Si hi ha error o no hi ha codi, redirigim a la home
+  // Si falla, torna a la home
   return NextResponse.redirect(`${origin}`)
 }
