@@ -26,7 +26,6 @@ export async function GET(request: Request) {
       }
     )
 
-    // Aquesta línia és la que treu el '#' i et logueja de veritat
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
@@ -34,6 +33,5 @@ export async function GET(request: Request) {
     }
   }
 
-  // Si falla, torna a la home
   return NextResponse.redirect(`${origin}`)
 }
