@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic' // <--- Afegeix això al principi de tot
+
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
@@ -26,14 +28,11 @@ export async function GET(request: Request) {
       }
     )
 
-    // Aquest pas és el que intercanvia el codi pel token real
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
     if (!error) {
       return NextResponse.redirect(`${origin}/dashboard`)
     }
   }
 
-  // Si no hi ha codi o hi ha error, tornem a la home
   return NextResponse.redirect(`${origin}`)
 }
