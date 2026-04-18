@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 
 export default function LoginPage() {
@@ -14,7 +14,7 @@ export default function LoginPage() {
     setLoading(true)
     setMessage('')
 
-    // 1. Validem el Codi d'Accés (Opció C)
+    // 1. Validem el Codi d'Accés
     const CODI_CORRECTE = process.env.NEXT_PUBLIC_ACCESS_CODE || 'BIBLIO-CCC-2026'
     
     if (accessCode !== CODI_CORRECTE) {
@@ -23,26 +23,24 @@ export default function LoginPage() {
       return
     }
 
-    // 2. Si el codi és OK, enviem el Magic Link de Supabase
-    const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+    // 2. Si el codi és OK, enviem el Magic Link
+    const redirectUrl = "https://biblioteca-ccc.vercel.app/auth/callback"
     
-    const redirectUrl = "https://biblioteca-ccc.vercel.app/auth/callback";
-    console.log("Intentant redirigir a:", redirectUrl);
-
     const { error } = await supabase.auth.signInWithOtp({
       email: email,
       options: {
         emailRedirectTo: redirectUrl,
       },
-    });
+    })
 
-  if (error) {
-    alert("Error: " + error.message);
-  } else {
-    alert("Correu enviat! Revisa la bústia.");
+    if (error) {
+      setMessage("❌ Error: " + error.message)
+    } else {
+      setMessage("✅ Correu enviat! Revisa la teva bústia d'entrada.")
+    }
+    
+    setLoading(false)
   }
-};
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
@@ -56,7 +54,7 @@ export default function LoginPage() {
             <input
               type="password"
               placeholder="Introdueix el codi secret"
-              className="mt-1 block w-full p-3 border rounded-md shadow-sm focus:ring-indigo-500 border-gray-300"
+              className="mt-1 block w-full p-3 border rounded-md shadow-sm focus:ring-indigo-500 border-gray-300 text-black"
               value={accessCode}
               onChange={(e) => setAccessCode(e.target.value)}
               required
@@ -68,7 +66,7 @@ export default function LoginPage() {
             <input
               type="email"
               placeholder="exemple@email.com"
-              className="mt-1 block w-full p-3 border rounded-md shadow-sm focus:ring-indigo-500 border-gray-300"
+              className="mt-1 block w-full p-3 border rounded-md shadow-sm focus:ring-indigo-500 border-gray-300 text-black"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -78,7 +76,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 font-bold"
+            className="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 font-bold disabled:bg-gray-400"
           >
             {loading ? 'Enviant...' : 'Entrar a la Biblioteca'}
           </button>
