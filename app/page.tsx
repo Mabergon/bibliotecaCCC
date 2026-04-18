@@ -27,7 +27,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: 'https://la-teva-app.vercel.app/auth/callback',
+        emailRedirectTo: 'https://biblioteca-ccc.vercel.app/auth/callback',
       },
     })
 
