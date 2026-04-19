@@ -10,38 +10,40 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setMessage('')
+  e.preventDefault()
+  setLoading(true)
+  setMessage('')
 
-    // 1. Validem el Codi d'Accés
-    const CODI_CORRECTE = process.env.NEXT_PUBLIC_ACCESS_CODE || 'BIBLIO-CCC-2026'
-    
-    if (accessCode !== CODI_CORRECTE) {
-      setMessage('❌ El codi d\'accés no és correcte.')
-      setLoading(false)
-      return
-    }
+  // 1. Validació del codi (com ja tenies)
+  const CODI_CORRECTE = process.env.NEXT_PUBLIC_ACCESS_CODE || 'BIBLIO-CCC-2026'
+  if (accessCode !== CODI_CORRECTE) {
+    setMessage('❌ El codi d\'accés no és correcte.')
+    setLoading(false)
+    return
+  }
 
-    // 2. Si el codi és OK, enviem el Magic Link// Forcem la URL sense espais ni errors
-    const origin = window.location.origin; // Això agafarà https://biblioteca-ccc.vercel.app automàticament
-    const redirectUrl = `${origin}/auth/callback`;
-    
+  // 2. Intent de Login FORÇANT el mètode PKCE
+  try {
     const { error } = await supabase.auth.signInWithOtp({
       email: email,
       options: {
-        emailRedirectTo: redirectUrl,
+        // Forcem que la redirecció sigui absoluta i neta
+        emailRedirectTo: 'https://biblioteca-ccc.vercel.app/auth/callback',
       },
     })
 
     if (error) {
       setMessage("❌ Error: " + error.message)
     } else {
-      setMessage("✅ Correu enviat! Revisa la teva bústia d'entrada.")
+      setMessage("✅ Correu enviat! L'enllaç ara hauria de portar un '?code=' i NO un '#'.")
     }
-    
+  } catch (err) {
+    setMessage("❌ Hi ha hagut un error inesperat.")
+    console.error(err)
+  } finally {
     setLoading(false)
   }
+}
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
