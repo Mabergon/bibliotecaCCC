@@ -21,7 +21,6 @@ interface Llibre {
 }
 
 export default function Biblioteca() {
-  const router = useRouter()
   // --- ESTATS ---
   const [llibres, setLlibres] = useState<Llibre[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,25 +30,34 @@ export default function Biblioteca() {
   const [filtres, setFiltres] = useState<string[]>(['meus', 'disponibles', 'altres'])
   const [isModalOpen, setIsModalOpen] = useState(false)
 
+  // --- LÒGICA DE FILTRES (MULTISELECCIÓ) ---
+  const toggleFiltre = (id: string) => {
+    setFiltres(prev => {
+      // Si el botó clicat ja està actiu i n'hi ha més d'un, el treiem.
+      // Si és l'últim que queda o si venim de "Tots", aïllem el clicat.
+      if (prev.length === 3) return [id];
+      const existeix = prev.includes(id);
+      const nouEstat = existeix ? prev.filter(f => f !== id) : [...prev, id];
+      return nouEstat.length === 0 ? ['meus', 'disponibles', 'altres'] : nouEstat;
+    });
+  };
+
+  const seleccionarTots = () => setFiltres(['meus', 'disponibles', 'altres']);
   const colorsEstats: Record<string, string> = {
     disponible: "bg-green-100 text-green-700 border-green-200",
     demanat: "bg-blue-100 text-blue-700 border-blue-200",
     prestat: "bg-orange-100 text-orange-700 border-orange-200",
-  };
-
+    // Pots afegir més estats si en tens (ex: reserva, perdut, etc.)
+    };
   // --- CÀRREGA DE DADES ---
   useEffect(() => {
     const fetchInitialData = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/')
-        return
-      }
       setCurrentUser(user)
       getLlibres()
     }
     fetchInitialData()
-  }, [router])
+  }, [])
 
   async function getLlibres() {
     setLoading(true)
@@ -69,7 +77,7 @@ export default function Biblioteca() {
   // --- SISTEMA DE LOGS ---
   const registrarActivitat = async (accio: string, detall: string) => {
     try {
-      await supabase.from('historial').insert([
+      const { error } = await supabase.from('historial').insert([
         { 
           user_id: currentUser?.id, 
           usuari_nom: nouNom || currentUser?.email || 'Usuari', 
@@ -77,6 +85,7 @@ export default function Biblioteca() {
           detall: detall 
         }
       ]);
+      if (error) console.error("Error Log:", error.message);
     } catch (err) { console.error("Log error:", err); }
   };
 
@@ -115,21 +124,6 @@ export default function Biblioteca() {
     } catch (err) { console.error(err); }
   };
 
-  const enviarEmail = async (llibre: Llibre, tipus: string, nomSolicitant: string) => {
-    const emailPropietari = llibre.propietari?.email;
-    if (!emailPropietari) return;
-
-    await supabase.functions.invoke('enviar-notificacio', {
-        body: {
-          email_propietari: emailPropietari,
-          nom_propietari: llibre.propietari?.nom || 'Propietari',
-          titol_llibre: llibre.titol,
-          nom_solicitant: nomSolicitant,
-          tipus: tipus,
-        },
-    });
-  };
-
   const eliminarLlibre = async (llibre: Llibre) => {
     if (!window.confirm(`Segur que vols eliminar "${llibre.titol}"?`)) return;
     const { error } = await supabase.from('llibres').delete().eq('id', llibre.id);
@@ -139,13 +133,37 @@ export default function Biblioteca() {
     }
   };
 
+    const enviarEmail = async (llibre: Llibre, tipus: string, nomSolicitant: string) => {
+    // Verifiquem si tenim l'email del propietari
+    const emailPropietari = llibre.propietari?.email;
+
+    if (!emailPropietari) {
+        console.warn("No s'ha pogut enviar el mail: falta l'email del propietari.");
+        return;
+    }
+
+    const { data, error } = await supabase.functions.invoke('enviar-notificacio', {
+        body: {
+        email_propietari: emailPropietari, // Sempre enviem el correu de l'amo
+        nom_propietari: llibre.propietari?.nom || 'Propietari',
+        titol_llibre: llibre.titol,
+        nom_solicitant: nomSolicitant,
+        tipus: tipus,
+        // Si vols enviar còpia a qui té el llibre actualment (opcional):
+        email_posseidor: llibre.posseidor?.email 
+        },
+    });
+
+    if (error) console.error("Error Edge Function:", error.message);
+    };
+
   async function actualitzarNom() {
     if (!nouNom || !currentUser) return;
     const { error } = await supabase.from('perfils').update({ nom: nouNom }).eq('id', currentUser.id);
     if (!error) { alert("Nom actualitzat!"); getLlibres(); }
   }
 
-  // --- FILTRATGE ---
+  // --- CÀLCUL DE COMPTADORS I FILTRATGE ---
   const counts = {
     TOTS: llibres.length,
     DISPONIBLES: llibres.filter(l => l.estat === 'disponible').length,
@@ -153,34 +171,29 @@ export default function Biblioteca() {
     MEUS: llibres.filter(l => l.propietari_id === currentUser?.id).length,
   };
 
-  const llibresFiltrats = llibres.filter(llibre => {
+    const llibresFiltrats = llibres.filter(llibre => {
+    // 1. Filtre de cerca per text
     const coincideixBusqueda = llibre.titol.toLowerCase().includes(busqueda.toLowerCase()) || 
                                 llibre.autor.toLowerCase().includes(busqueda.toLowerCase());
     if (!coincideixBusqueda) return false;
 
+    // 2. Definició de categories per als botons
     const esMeu = llibre.propietari_id === currentUser?.id;
     const esDisponible = llibre.estat === 'disponible';
+    // ARA: "Altres" inclou qualsevol que no estigui disponible (estigui prestat o demanat)
     const esPrestatODemanat = llibre.estat === 'prestat' || llibre.estat === 'demanat';
 
     if (filtres.includes('meus') && esMeu) return true;
     if (filtres.includes('disponibles') && esDisponible) return true;
     if (filtres.includes('altres') && esPrestatODemanat) return true;
-    return false;
-  });
 
-  const toggleFiltre = (id: string) => {
-    setFiltres(prev => {
-      if (prev.length === 3) return [id];
-      const existeix = prev.includes(id);
-      const nouEstat = existeix ? prev.filter(f => f !== id) : [...prev, id];
-      return nouEstat.length === 0 ? ['meus', 'disponibles', 'altres'] : nouEstat;
+    return false;
     });
-  };
 
   return (
     <main className="max-w-4xl mx-auto p-4 md:p-6 bg-gray-50 min-h-screen pb-20 font-sans">
       
-      {/* HEADER RESPONSIVE */}
+      {/* HEADER */}
       <header className="w-full mb-6 pt-4 flex flex-col items-center">
         <div className="flex flex-wrap items-center justify-center gap-3 bg-white p-3 px-4 rounded-2xl shadow-sm border border-gray-100 w-full max-w-2xl">
           <div className="flex items-center gap-2 border-b md:border-b-0 md:border-r border-gray-100 pb-2 md:pb-0 md:pr-4 w-full md:w-auto justify-center">
@@ -189,45 +202,45 @@ export default function Biblioteca() {
               className="text-base md:text-xs p-2 outline-none w-32 bg-transparent"
               onChange={(e) => setNouNom(e.target.value)}
             />
-            <button onClick={actualitzarNom} className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold active:scale-95">Set ⚙️</button>
+            <button onClick={actualitzarNom} className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold hover:bg-indigo-700 transition-all active:scale-95">Set ⚙️</button>
           </div>
-          <div className="flex items-center gap-4">
-            <details className="group relative">
-              <summary className="list-none cursor-pointer text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-indigo-600">📜 Normes</summary>
-              <div className="absolute z-50 mt-4 p-4 bg-white border border-gray-100 shadow-2xl rounded-2xl text-xs text-gray-600 w-56 left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0">
-                <ul className="space-y-2 list-disc pl-3">
-                  <li>Retorna els llibres a temps.</li>
-                  <li>Cuida el material.</li>
-                  <li>Màxim 1 reserva activa.</li>
-                </ul>
-              </div>
-            </details>
-            <Link href="/faq" className="text-[10px] font-bold uppercase tracking-widest text-gray-400">FAQ ❓</Link>
-            {currentUser?.email === 'darumba@gmail.com' && (
-              <Link href="/admin" className="text-[10px] font-black text-indigo-600 pl-4 border-l border-gray-200">Admin 🛡️</Link>
-            )}
-          </div>
+          <details className="group relative border-r border-gray-100 pr-4">
+            <summary className="list-none cursor-pointer text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-indigo-600 flex items-center gap-1">
+              <span>📜 Normes</span>
+            </summary>
+            <div className="absolute z-50 mt-4 p-4 bg-white border border-gray-100 shadow-2xl rounded-2xl text-xs text-gray-600 w-56 left-0 animate-in fade-in zoom-in duration-200">
+              <ul className="space-y-2 list-disc pl-3">
+                <li>Retorna els llibres a temps.</li>
+                <li>Cuida el material.</li>
+                <li>Màxim 1 reserva activa.</li>
+              </ul>
+            </div>
+          </details>
+          <Link href="/faq" className="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-indigo-600">FAQ ❓</Link>
+          {currentUser?.email === 'darumba@gmail.com' && (
+            <Link href="/admin" className="text-[10px] font-black uppercase tracking-widest text-indigo-600 border-l border-gray-200 pl-4">Admin 🛡️</Link>
+          )}
         </div>
       </header>
 
-      <h1 className="text-4xl md:text-6xl font-black text-indigo-900 text-center mb-8 tracking-tight px-4">Biblioteca 📚</h1>
+      <h1 className="text-4xl md:text-6xl font-black text-indigo-900 text-center mb-10 tracking-tight">Biblioteca 📚</h1>
 
-      {/* CERCADOR + BOTÓ NOU */}
+      {/* CERCADOR + BOTÓ NOU (MODAL) */}
       <div className="max-w-2xl mx-auto mb-8 px-2">
-        <div className="flex flex-col md:flex-row gap-3 bg-transparent md:bg-white md:p-2 md:rounded-3xl md:shadow-xl border-gray-100">
-          <div className="flex-grow flex items-center bg-white p-1 rounded-2xl shadow-md md:shadow-none border md:border-none px-4">
+        <div className="flex items-center gap-2 bg-white p-2 rounded-3xl shadow-xl border border-gray-100">
+          <div className="flex-grow relative flex items-center pl-4">
             <span className="text-gray-400">🔍</span>
             <input
-              type="text" placeholder="Títol o autor..."
-              className="w-full pl-3 py-4 md:py-3 outline-none bg-transparent text-base md:text-lg"
+              type="text" placeholder="Busca títol o autor..."
+              className="w-full pl-3 pr-4 py-3 outline-none bg-transparent text-lg"
               value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
             />
           </div>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="bg-indigo-600 text-white flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold shadow-md active:scale-95 transition-all"
+            className="bg-indigo-600 text-white flex items-center gap-2 px-6 py-3 rounded-2xl font-bold hover:bg-indigo-700 shadow-md transition-all active:scale-95"
           >
-            <span className="text-xl">+</span> <span>Nou Llibre</span>
+            <span className="text-xl">+</span> <span className="hidden md:inline">Nou Llibre</span>
           </button>
         </div>
       </div>
@@ -239,75 +252,122 @@ export default function Biblioteca() {
         registrarActivitat={registrarActivitat}
       />
 
-      {/* FILTRES RESPONSIVE (Scroll horitzontal en mòbil) */}
-      <div className="flex gap-2 mb-8 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 md:mx-0">
+      {/* FILTRES AMB COLORS ESPECÍFICS PER A CADA CATEGORIA */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 md:mx-0">
+        {/* Botó TOTS */}
         <button
-            onClick={() => setFiltres(['meus', 'disponibles', 'altres'])}
-            className={`px-5 py-2.5 rounded-full font-bold text-sm whitespace-nowrap transition-all ${filtres.length === 3 ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-400 border border-gray-200'}`}
+            onClick={seleccionarTots}
+            className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-300 ${
+            filtres.length === 3 
+            ? 'bg-indigo-600 text-white shadow-md' 
+            : 'bg-white text-gray-400 border border-gray-200'
+            }`}
         >
             Tots ({counts.TOTS})
         </button>
-        {/* Botons dinàmics per a "Els meus", "Disponibles", etc. igual que abans */}
-        {['meus', 'disponibles', 'altres'].map((fId) => {
-            const label = fId === 'meus' ? 'Els meus' : fId === 'disponibles' ? 'Disponibles' : 'Prestats';
-            const count = fId === 'meus' ? counts.MEUS : fId === 'disponibles' ? counts.DISPONIBLES : counts.PRESTATS;
-            const isActiu = filtres.includes(fId) && filtres.length < 3;
+
+        {[
+            { 
+            id: 'meus', 
+            label: 'Els meus', 
+            count: counts.MEUS, 
+            activeClass: 'bg-red-500 text-white shadow-red-200', 
+            badgeClass: 'bg-red-100 text-red-600' 
+            },
+            { 
+            id: 'disponibles', 
+            label: 'Disponibles', 
+            count: counts.DISPONIBLES, 
+            activeClass: 'bg-green-600 text-white shadow-green-200', 
+            badgeClass: 'bg-green-100 text-green-700' 
+            },
+            { 
+            id: 'altres', 
+            label: 'Prestats', 
+            count: counts.PRESTATS, 
+            activeClass: 'bg-orange-500 text-white shadow-orange-200', 
+            badgeClass: 'bg-orange-100 text-orange-600' 
+            },
+        ].map((f) => {
+            const isActiu = filtres.includes(f.id) && filtres.length < 3;
             return (
-              <button
-                key={fId}
-                onClick={() => toggleFiltre(fId)}
-                className={`px-5 py-2.5 rounded-full flex items-center gap-2 whitespace-nowrap transition-all border ${isActiu ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white text-gray-500 border-gray-200'}`}
-              >
-                <span className="font-bold text-sm">{label}</span>
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-black/10">{count}</span>
-              </button>
+            <button
+                key={f.id}
+                onClick={() => toggleFiltre(f.id)}
+                className={`px-5 py-2.5 rounded-full flex items-center gap-3 whitespace-nowrap transition-all duration-300 border ${
+                isActiu 
+                ? `${f.activeClass} border-transparent shadow-lg scale-105` 
+                : `bg-white text-gray-500 border-gray-200 hover:border-gray-300`
+                }`}
+            >
+                <span className="font-bold text-sm">{f.label}</span>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md transition-colors ${
+                isActiu 
+                ? 'bg-white/25 text-white' 
+                : f.badgeClass
+                }`}>
+                {f.count}
+                </span>
+            </button>
             )
         })}
-      </div>
+        </div>
 
-      {/* LLISTAT DE FITXES EN GRID (1 en mòbil, 2 en PC) */}
+      {/* LLISTAT DE FITXES */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {loading ? (
-          <p className="col-span-full text-center py-20 text-gray-400 animate-pulse">Llegint prestatgeries...</p>
+          <p className="col-span-full text-center py-20 text-gray-400 font-medium">Actualitzant prestatgeria...</p>
         ) : llibresFiltrats.length === 0 ? (
-          <p className="col-span-full text-center py-20 text-gray-400 italic">Cap llibre trobat.</p>
+          <p className="col-span-full text-center py-20 text-gray-400 italic">No s'han trobat llibres amb aquesta selecció.</p>
         ) : llibresFiltrats.map((llibre) => {
           const esMeuPos = llibre.posseidor_id === currentUser?.id;
-          let tBoto = "Demanar llibre", cBoto = "bg-indigo-600", disabled = false;
+          let tBoto = "Demanar llibre", cBoto = "bg-indigo-600", desc = false;
 
           if (llibre.estat === 'demanat') {
             tBoto = esMeuPos ? "✅ Confirmar Recollida" : `⏳ Pendent de ${llibre.posseidor?.nom}`;
-            cBoto = esMeuPos ? "bg-green-600" : "bg-gray-200 text-gray-400";
-            disabled = !esMeuPos;
+            cBoto = esMeuPos ? "bg-green-600 hover:bg-green-700" : "bg-gray-200 text-gray-500";
+            desc = !esMeuPos;
           } else if (llibre.estat === 'prestat') {
-            tBoto = esMeuPos ? "📤 Retornar" : (llibre.reserva_id ? "🚫 Reservat" : "🕒 Cua de reserva");
-            cBoto = esMeuPos ? "bg-orange-500" : (llibre.reserva_id ? "bg-gray-200 text-gray-400" : "bg-amber-500");
-            disabled = !esMeuPos && !!llibre.reserva_id;
+            tBoto = esMeuPos ? "📤 Retornar llibre" : (llibre.reserva_id ? "🚫 Cua Plena" : "🕒 Posar-me en cua");
+            cBoto = esMeuPos ? "bg-orange-500 hover:bg-orange-600" : (llibre.reserva_id ? "bg-gray-200 text-gray-500" : "bg-amber-500 hover:bg-amber-600");
+            desc = !esMeuPos && !!llibre.reserva_id;
           }
 
           return (
-            <div key={llibre.id} className={`p-5 md:p-6 rounded-[2rem] shadow-sm border transition-all ${llibre.propietari_id === currentUser?.id ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'}`}>
-              <div className="flex justify-between items-start mb-4">
-                <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg border ${colorsEstats[llibre.estat] || "bg-gray-100"}`}>{llibre.estat}</span>
-                {llibre.posseidor_id === currentUser?.id && llibre.propietari_id !== currentUser?.id && (
-                  <span className="text-[9px] font-black uppercase px-2 py-1 bg-red-600 text-white rounded-lg animate-pulse">TU EL TENS 📖</span>
-                )}
+            <div key={llibre.id} className={`p-6 rounded-[2.5rem] shadow-sm border transition-all ${llibre.propietari_id === currentUser?.id ? 'bg-red-50 border-red-200 ring-1 ring-red-200' : 'bg-white border-gray-100'}`}>
+              <div className="flex items-center justify-between gap-2 mb-4 w-full">
+                {/* Contenidor esquerre per a l'etiqueta blava */}
+                <div>
+                    {llibre.posseidor_id === currentUser?.id && llibre.propietari_id !== currentUser?.id && (
+                    <span className="text-[9px] font-black uppercase px-2 py-1 bg-red-600 text-white rounded-lg shadow-sm animate-pulse">
+                        L'ESTÀS LLEGINT TU 📖
+                    </span>
+                    )}
+                </div>
+                <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg border ${
+                    colorsEstats[llibre.estat] || "bg-gray-100 text-gray-500 border-gray-200"
+                }`}>
+                    {llibre.estat}
+                </span>
               </div>
-              
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-800 leading-tight">{llibre.titol}</h3>
-                <p className="text-gray-400 italic text-sm">{llibre.autor}</p>
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800">{llibre.titol}</h3>
+                  <p className="text-gray-400 italic text-sm">{llibre.autor}</p>
+                </div>
+
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-2xl text-[11px] space-y-2 mb-6 border border-black/5">
+              <div className="bg-white/50 p-4 rounded-2xl text-[11px] space-y-2 mb-6 border border-black/5">
                 <p className="flex justify-between"><span>🏠 Propietari</span><span className="font-bold">{llibre.propietari?.nom || 'Anònim'}</span></p>
                 {llibre.posseidor?.nom && <p className="flex justify-between text-indigo-600"><span>👤 El té</span><span className="font-bold">{llibre.posseidor?.nom}</span></p>}
+                {llibre.reservat_per?.nom && <p className="flex justify-between text-amber-600 border-t pt-2"><span>🕒 En cua</span><span className="font-bold">{llibre.reservat_per?.nom}</span></p>}
               </div>
 
               <div className="flex gap-2">
-                <button disabled={disabled} onClick={() => gestionarAccioLlibre(llibre)} className={`flex-grow py-4 rounded-2xl font-bold text-white shadow-sm active:scale-95 transition-all ${cBoto} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>{tBoto}</button>
+                <button disabled={desc} onClick={() => gestionarAccioLlibre(llibre)} className={`flex-grow py-3 rounded-2xl font-bold text-white transition-all active:scale-95 ${cBoto} ${desc ? 'opacity-50 cursor-not-allowed' : ''}`}>{tBoto}</button>
                 {currentUser?.id === llibre.propietari_id && (
-                  <button onClick={() => eliminarLlibre(llibre)} className="px-4 py-4 bg-white text-red-500 rounded-2xl border border-red-100 active:scale-95">🗑️</button>
+                  <button onClick={() => eliminarLlibre(llibre)} className="px-4 py-3 bg-white text-red-500 rounded-2xl border border-red-100 hover:bg-red-500 hover:text-white transition-all">🗑️</button>
                 )}
               </div>
             </div>
