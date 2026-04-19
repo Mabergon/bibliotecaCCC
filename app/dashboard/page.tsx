@@ -191,7 +191,7 @@ export default function Biblioteca() {
     });
 
   return (
-    <main className="max-w-4xl mx-auto p-4 md:p-6 bg-gray-50 min-h-screen pb-20 font-sans">
+    <main className="w-full max-w-4xl mx-auto p-3 md:p-6 bg-gray-50 min-h-screen pb-20 font-sans">
       
       {/* HEADER */}
       <header className="w-full mb-6 pt-4 flex flex-col items-center">
@@ -226,8 +226,8 @@ export default function Biblioteca() {
       <h1 className="text-4xl md:text-6xl font-black text-indigo-900 text-center mb-10 tracking-tight">Biblioteca 📚</h1>
 
       {/* CERCADOR + BOTÓ NOU (MODAL) */}
-      <div className="max-w-2xl mx-auto mb-8 px-2">
-        <div className="flex items-center gap-2 bg-white p-2 rounded-3xl shadow-xl border border-gray-100">
+      <div className="w-full mb-8">
+        <div className="flex flex-col md:flex-row gap-3 bg-white p-2 rounded-2xl shadow-md border border-gray-100 mx-1">
           <div className="flex-grow relative flex items-center pl-4">
             <span className="text-gray-400">🔍</span>
             <input
@@ -253,7 +253,7 @@ export default function Biblioteca() {
       />
 
       {/* FILTRES AMB COLORS ESPECÍFICS PER A CADA CATEGORIA */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 md:mx-0">
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
         {/* Botó TOTS */}
         <button
             onClick={seleccionarTots}
@@ -314,7 +314,7 @@ export default function Biblioteca() {
         </div>
 
       {/* LLISTAT DE FITXES */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
         {loading ? (
           <p className="col-span-full text-center py-20 text-gray-400 font-medium">Actualitzant prestatgeria...</p>
         ) : llibresFiltrats.length === 0 ? (
@@ -334,7 +334,7 @@ export default function Biblioteca() {
           }
 
           return (
-            <div key={llibre.id} className={`p-6 rounded-[2.5rem] shadow-sm border transition-all ${llibre.propietari_id === currentUser?.id ? 'bg-red-50 border-red-200 ring-1 ring-red-200' : 'bg-white border-gray-100'}`}>
+            <div key={llibre.id} className={`w-full p-4 md:p-6 rounded-[1.5rem] shadow-sm border transition-all ${llibre.propietari_id === currentUser?.id ? 'bg-red-50 border-red-200 ring-1 ring-red-200' : 'bg-white border-gray-100'}`}>
               <div className="flex items-center justify-between gap-2 mb-4 w-full">
                 {/* Contenidor esquerre per a l'etiqueta blava */}
                 <div>
