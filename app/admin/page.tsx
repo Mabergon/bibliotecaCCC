@@ -16,7 +16,7 @@ export default function AdminPanel() {
       const { data: { user } } = await supabase.auth.getUser()
 
       // 🛡️ SEGURETAT: Només tu pots entrar (canvia l'email si cal)
-      if (!user || user.email !== 'darumba@gmail.com') {
+      if (!user || user.email !== 'bibliotecacccolonia@gmail.com') {
         window.location.href = '/' // Expulsa si no ets l'admin
         return
       }

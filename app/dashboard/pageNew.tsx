@@ -203,7 +203,7 @@ export default function Biblioteca() {
               </div>
             </details>
             <Link href="/faq" className="text-[10px] font-bold uppercase tracking-widest text-gray-400">FAQ ❓</Link>
-            {currentUser?.email === 'darumba@gmail.com' && (
+            {currentUser?.email === 'bibliotecacccolonia@gmail.com' && (
               <Link href="/admin" className="text-[10px] font-black text-indigo-600 pl-4 border-l border-gray-200">Admin 🛡️</Link>
             )}
           </div>

@@ -29,6 +29,7 @@ export default function Biblioteca() {
   const [busqueda, setBusqueda] = useState('') 
   const [filtres, setFiltres] = useState<string[]>(['meus', 'disponibles', 'altres'])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   // --- LÒGICA DE FILTRES (MULTISELECCIÓ) ---
   const toggleFiltre = (id: string) => {
@@ -217,7 +218,7 @@ export default function Biblioteca() {
             </div>
           </details>
           <Link href="/faq" className="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-indigo-600">FAQ ❓</Link>
-          {currentUser?.email === 'darumba@gmail.com' && (
+          {currentUser?.email === 'bibliotecacccolonia@gmail.com' && (
             <Link href="/admin" className="text-[10px] font-black uppercase tracking-widest text-indigo-600 border-l border-gray-200 pl-4">Admin 🛡️</Link>
           )}
         </div>
@@ -252,6 +253,27 @@ export default function Biblioteca() {
         registrarActivitat={registrarActivitat}
       />
 
+      <div className="flex gap-2 mb-6 px-1">
+        <button 
+          onClick={() => setViewMode('grid')}
+          className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-sm
+            ${viewMode === 'grid' 
+              ? 'bg-blue-600 text-white ring-2 ring-blue-100' 
+              : 'bg-white text-blue-600 border border-blue-100 hover:bg-blue-50'}`}
+        >
+          <span>🔳</span> Format Fitxa
+        </button>
+        
+        <button 
+          onClick={() => setViewMode('list')}
+          className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-sm
+            ${viewMode === 'list' 
+              ? 'bg-blue-600 text-white ring-2 ring-blue-100' 
+              : 'bg-white text-blue-600 border border-blue-100 hover:bg-blue-50'}`}
+        >
+          <span>≡</span> Format Llista
+        </button>
+      </div>
       {/* FILTRES AMB COLORS ESPECÍFICS PER A CADA CATEGORIA */}
         <div className="flex gap-2 mb-8 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
         {/* Botó TOTS */}
@@ -314,7 +336,7 @@ export default function Biblioteca() {
         </div>
 
       {/* LLISTAT DE FITXES */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+      <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-4 w-full" : "flex flex-col gap-2 w-full"}>
         {loading ? (
           <p className="col-span-full text-center py-20 text-gray-400 font-medium">Actualitzant prestatgeria...</p>
         ) : llibresFiltrats.length === 0 ? (
@@ -322,6 +344,7 @@ export default function Biblioteca() {
         ) : llibresFiltrats.map((llibre) => {
           const esMeuPos = llibre.posseidor_id === currentUser?.id;
           let tBoto = "Demanar llibre", cBoto = "bg-indigo-600", desc = false;
+          let disabled = false;
 
           if (llibre.estat === 'demanat') {
             tBoto = esMeuPos ? "✅ Confirmar Recollida" : `⏳ Pendent de ${llibre.posseidor?.nom}`;
@@ -334,6 +357,8 @@ export default function Biblioteca() {
           }
 
           return (
+            viewMode === 'grid' ? (
+            // --- MODE FITXA (El que ja tens) ---
             <div key={llibre.id} className={`w-full p-4 md:p-6 rounded-[1.5rem] shadow-sm border transition-all ${llibre.propietari_id === currentUser?.id ? 'bg-red-50 border-red-200 ring-1 ring-red-200' : 'bg-white border-gray-100'}`}>
               <div className="flex items-center justify-between gap-2 mb-4 w-full">
                 {/* Contenidor esquerre per a l'etiqueta blava */}
@@ -371,6 +396,50 @@ export default function Biblioteca() {
                 )}
               </div>
             </div>
+            ) : (
+              // --- MODE LLISTA (Compacte per a iPhone) ---
+              <div key={llibre.id} className="flex items-center justify-between p-3 bg-white border-b border-gray-100 hover:bg-indigo-50 transition-colors">
+                <div className="flex-grow min-w-0">
+                  <h3 className="font-bold text-sm truncate">{llibre.titol}</h3>
+                  <p className="text-xs text-gray-400 truncate">{llibre.autor}</p>
+                </div>
+                <div className="flex items-center gap-2 ml-4">
+                  <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${colorsEstats[llibre.estat]}`}>
+                    {llibre.estat}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      disabled={disabled}
+                      onClick={() => gestionarAccioLlibre(llibre)}
+                      className={`px-4 py-2.5 rounded-xl font-bold text-[10px] text-white shadow-sm whitespace-nowrap transition-all active:scale-95 ${cBoto} ${disabled ? 'opacity-50' : ''}`}
+                    >
+                      {/* LÒGICA ADAPTADA PER A TOTS ELS ESTATS */}
+                      {llibre.estat === 'disponible' && "Demanar llibre"}
+                      
+                      {llibre.estat === 'demanat' && (
+                        esMeuPos ? "Confirmar recollida" : "Pendent de confirmació"
+                      )}
+                      
+                      {llibre.estat === 'prestat' && (
+                        esMeuPos 
+                          ? "Retornar llibre" 
+                          : (llibre.reserva_id ? "Llibre reservat" : "Posar-me en cua")
+                      )}
+                    </button>
+                    
+                    {/* Botó d'eliminar opcional si ets el propietari en mode llista */}
+                    {currentUser?.id === llibre.propietari_id && (
+                      <button 
+                        onClick={() => eliminarLlibre(llibre)}
+                        className="p-2.5 bg-red-50 text-red-500 rounded-xl border border-red-100"
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )
           )
         })}
       </div>
