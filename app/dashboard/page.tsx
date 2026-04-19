@@ -29,7 +29,7 @@ export default function Biblioteca() {
   const [busqueda, setBusqueda] = useState('') 
   const [filtres, setFiltres] = useState<string[]>(['meus', 'disponibles', 'altres'])
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
   // --- LÒGICA DE FILTRES (MULTISELECCIÓ) ---
   const toggleFiltre = (id: string) => {
