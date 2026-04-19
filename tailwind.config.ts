@@ -2,20 +2,13 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {
-      colors: {
-        // Aquí és on afegeixes els teus colors si vols
-        indigo: {
-          900: '#1e1b4b',
-          // ...
-        },
-      },
-    },
+    extend: {},
   },
   plugins: [],
 };
