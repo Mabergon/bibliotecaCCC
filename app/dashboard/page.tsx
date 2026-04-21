@@ -18,6 +18,7 @@ interface Llibre {
   propietari?: { nom: string; email: string }
   posseidor?: { nom: string; email: string }
   reservat_per?: { nom: string; email: string }
+  sollicitant_email?: string | null
 }
 
 export default function Biblioteca() {
@@ -74,6 +75,17 @@ export default function Biblioteca() {
     else setLlibres(data || [])
     setLoading(false)
   }
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUserEmail(session.user.email ?? null);
+      }
+    };
+    getSession();
+  }, []);
 
   // --- SISTEMA DE LOGS ---
   const registrarActivitat = async (accio: string, detall: string) => {
@@ -101,7 +113,7 @@ export default function Biblioteca() {
       let accioNom = "";
 
       if (llibre.estat === 'disponible') {
-        updateData = { estat: 'demanat', posseidor_id: currentUser.id };
+        updateData = { estat: 'demanat', posseidor_id: currentUser.id, sollicitant_email: userEmail};
         accioNom = "DEMANDA";
       } else if (llibre.estat === 'demanat' && esMeuPosseidor) {
         updateData = { estat: 'prestat' };
@@ -124,6 +136,32 @@ export default function Biblioteca() {
       }
     } catch (err) { console.error(err); }
   };
+
+  const cancelarPeticio = async (llibreId: string) => {
+    try {
+      const { error } = await supabase
+        .from('llibres')
+        .update({ 
+          estat: 'disponible', 
+          sollicitant_email: null // Esborrem qui l'havia demanat
+        })
+        .eq('id', llibreId);
+
+      if (error) throw error;
+      
+      // Actualitzem l'estat local perquè la interfície canviï a l'instant
+      setLlibres(llibres.map(llibre => 
+        llibre.id === llibreId 
+          ? { ...llibre, estat: 'disponible', sollicitant_email: null } 
+          : llibre
+      ));
+      
+      alert('Peticion cancel·lada correctament.');
+    } catch (error) {
+        console.error('Error al cancel·lar:', error);
+        alert('No s\'ha pogut cancel·lar la petició.');
+    }
+  }; 
 
   const eliminarLlibre = async (llibre: Llibre) => {
     if (!window.confirm(`Segur que vols eliminar "${llibre.titol}"?`)) return;
@@ -474,6 +512,15 @@ export default function Biblioteca() {
                           : (llibre.reserva_id ? "Llibre reservat" : "Posar-me en cua")
                       )}
                     </button>
+
+                    {llibre.estat === 'sol·licitat' && llibre.sollicitant_email === userEmail && (
+                      <button
+                        onClick={() => cancelarPeticio(llibre.id)}
+                        className="ml-2 px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold uppercase rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
+                      >
+                        Anul·lar petició
+                      </button>
+                    )}
                     
                     {/* Botó d'eliminar opcional si ets el propietari en mode llista */}
                     {currentUser?.id === llibre.propietari_id && (
