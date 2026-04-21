@@ -78,13 +78,19 @@ export default function Biblioteca() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUserEmail(session.user.email ?? null);
-      }
-    };
-    getSession();
+    // 1. Agafem la sessió actual al carregar
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserEmail(session?.user?.email ?? null);
+      if (session?.user) setCurrentUser(session.user);
+    });
+
+    // 2. Escoltem si la sessió canvia (login/logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email ?? null);
+      if (session?.user) setCurrentUser(session.user);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   // --- SISTEMA DE LOGS ---
