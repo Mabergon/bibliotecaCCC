@@ -166,9 +166,14 @@ export default function Biblioteca() {
       const quiHoFa = nouNom || userEmail || 'Un usuari';
       await enviarEmail(llibreACancelar, 'CANCEL·LACIÓ', quiHoFa);
       // Actualitzem l'estat local perquè la interfície canviï a l'instant
-      setLlibres(llibres.map(llibre => 
+      setLlibres(prevLlibres => prevLlibres.map(llibre => 
         llibre.id === llibreId 
-          ? { ...llibre, estat: 'disponible', sollicitant_email: null } 
+          ? { 
+              ...llibre, 
+              estat: 'disponible', 
+              posseidor_id: '', // En lloc d'undefined, posem un string buit
+              sollicitant_email: null 
+            } as Llibre 
           : llibre
       ));
       
