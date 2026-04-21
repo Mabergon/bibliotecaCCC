@@ -439,6 +439,14 @@ export default function Biblioteca() {
           let tBoto = "Demanar llibre", cBoto = "bg-indigo-600", desc = false;
           let disabled = false;
 
+          if (llibre.estat === 'demanat' && llibre.sollicitant_email === userEmail) {
+            <button
+              onClick={() => cancelarPeticio(llibre.id)}
+              className="ml-2 px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold uppercase rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
+            >
+              Anul·lar petició
+            </button>
+          }
           if (llibre.estat === 'demanat') {
             tBoto = esMeuPos ? "✅ Confirmar Recollida" : `⏳ Pendent de ${llibre.posseidor?.nom}`;
             cBoto = esMeuPos ? "bg-green-600 hover:bg-green-700" : "bg-gray-200 text-gray-500";
@@ -501,6 +509,16 @@ export default function Biblioteca() {
                     {llibre.estat}
                   </span>
                   <div className="flex items-center gap-2">
+
+                    {llibre.estat === 'demanat' && llibre.sollicitant_email === userEmail && (
+                      <button
+                        onClick={() => cancelarPeticio(llibre.id)}
+                        className="ml-2 px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold uppercase rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
+                      >
+                        Anul·lar petició
+                      </button>
+                    )}
+
                     <button 
                       disabled={disabled}
                       onClick={() => gestionarAccioLlibre(llibre)}
@@ -520,14 +538,6 @@ export default function Biblioteca() {
                       )}
                     </button>
 
-                    {llibre.estat === 'demanat' && llibre.sollicitant_email === userEmail && (
-                      <button
-                        onClick={() => cancelarPeticio(llibre.id)}
-                        className="ml-2 px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold uppercase rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
-                      >
-                        Anul·lar petició
-                      </button>
-                    )}
                     
                     {/* Botó d'eliminar opcional si ets el propietari en mode llista */}
                     {currentUser?.id === llibre.propietari_id && (
