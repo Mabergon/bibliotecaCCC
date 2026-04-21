@@ -224,7 +224,55 @@ export default function Biblioteca() {
         </div>
       </header>
 
-      <h1 className="text-4xl md:text-6xl font-black text-indigo-900 text-center mb-10 tracking-tight">Biblioteca 📚</h1>
+      <div className="flex flex-col items-center justify-center py-6">
+        {/* LOGO SVG ELABORAT */}
+        <svg 
+          width="120" 
+          height="80" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+          className="drop-shadow-sm"
+        >
+          {/* Ombra/Cos del llibre */}
+          <path 
+            d="M12 21C12 21 10 19 4 19H2V5C2 5 4 5 10 7C11.3333 7.4 12 8 12 8C12 8 12.6667 7.4 14 7C20 5 22 5 22 5V19H20C14 19 12 21 12 21Z" 
+            fill="#4F46E5" 
+            fillOpacity="0.1" 
+            stroke="#4338CA" 
+            strokeWidth="1.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          />
+          {/* Detalls de les pàgines (línies internes) */}
+          <path d="M12 8V21" stroke="#4338CA" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M5 10H9" stroke="#4338CA" strokeWidth="1" strokeLinecap="round" opacity="0.5"/>
+          <path d="M5 13H9" stroke="#4338CA" strokeWidth="1" strokeLinecap="round" opacity="0.5"/>
+          <path d="M15 10H19" stroke="#4338CA" strokeWidth="1" strokeLinecap="round" opacity="0.5"/>
+          <path d="M15 13H19" stroke="#4338CA" strokeWidth="1" strokeLinecap="round" opacity="0.5"/>
+          {/* Coberta exterior */}
+          <path 
+            d="M12 8C12 8 12.6667 7.4 14 7C20 5 22 5 22 5V17C22 17 20 17 14 19C12.6667 19.4 12 20 12 20" 
+            stroke="#4338CA" 
+            strokeWidth="1.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          />
+          <path 
+            d="M12 8C12 8 11.3333 7.4 10 7C4 5 2 5 2 5V17C2 17 4 17 10 19C11.3333 19.4 12 20 12 20" 
+            stroke="#4338CA" 
+            strokeWidth="1.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          />
+        </svg>
+
+        {/* TEXT DEL LOGO */}
+        <h1 className="text-3xl font-black text-indigo-700 tracking-[0.15em] uppercase mt-4">
+          Biblioteca
+        </h1>
+        <div className="h-1 w-12 bg-indigo-600 rounded-full mt-1 opacity-20"></div>
+      </div>
 
       {/* CERCADOR + BOTÓ NOU (MODAL) */}
       <div className="w-full mb-8">
