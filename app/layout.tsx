@@ -14,7 +14,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Biblioteca CCC',
-  description: 'Sistema de gestió de préstecs de la Biblioteca CCC',
+  description: 'El nostre club de lectura privat',
+  icons: {
+    icon: '/icon.png', // El fitxer que has posat a la carpeta public o app
+    apple: '/icon.png', // Això farà que es vegi bé si el guarden a l'inici de l'iPhone
+  },
 };
 
 // AQUESTA ÉS LA CLAU PER AL MÒBIL:
