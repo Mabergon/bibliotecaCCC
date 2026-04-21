@@ -483,12 +483,14 @@ export default function Biblioteca() {
               </div>
               {/* BOTÓN DE CANCELAR (Solo aparece si tú lo has pedido y está pendiente) */}
               {llibre.estat === 'demanat' && llibre.sollicitant_email?.toLowerCase() === userEmail?.toLowerCase() && (
-                <button 
-                  onClick={() => cancelarPeticio(llibre.id)} 
-                  className="w-full py-2 bg-red-50 text-red-600 text-[10px] font-bold uppercase rounded-xl border border-red-100 hover:bg-red-100 transition-all"
-                >
-                  Anul·lar la meva petició
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => cancelarPeticio(llibre.id)} 
+                    className="w-full py-2 bg-red-50 text-red-600 text-[10px] font-bold uppercase rounded-xl border border-red-100 hover:bg-red-100 transition-all"
+                  >
+                    Anul·lar la meva petició
+                  </button>
+                </div>
               )}
               <div className="flex gap-2">
                 <button disabled={desc} onClick={() => gestionarAccioLlibre(llibre)} className={`flex-grow py-3 rounded-2xl font-bold text-white transition-all active:scale-95 ${cBoto} ${desc ? 'opacity-50 cursor-not-allowed' : ''}`}>{tBoto}</button>
