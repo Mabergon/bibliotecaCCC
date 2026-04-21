@@ -68,6 +68,7 @@ export default function Biblioteca() {
       .select(`
         *,
         propietari:perfils!propietari_id(nom, email),
+        sollicitant_email,
         posseidor:perfils!posseidor_id(nom, email),
         reservat_per:perfils!reserva_id(nom, email)
       `)
@@ -519,7 +520,7 @@ export default function Biblioteca() {
                       )}
                     </button>
 
-                    {llibre.estat === 'sol·licitat' && llibre.sollicitant_email === userEmail && (
+                    {llibre.estat === 'demanat' && llibre.sollicitant_email === userEmail && (
                       <button
                         onClick={() => cancelarPeticio(llibre.id)}
                         className="ml-2 px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold uppercase rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
