@@ -439,14 +439,6 @@ export default function Biblioteca() {
           let tBoto = "Demanar llibre", cBoto = "bg-indigo-600", desc = false;
           let disabled = false;
 
-          if (llibre.estat === 'demanat' && llibre.sollicitant_email === userEmail) {
-            <button
-              onClick={() => cancelarPeticio(llibre.id)}
-              className="ml-2 px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold uppercase rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
-            >
-              Anul·lar petició
-            </button>
-          }
           if (llibre.estat === 'demanat') {
             tBoto = esMeuPos ? "✅ Confirmar Recollida" : `⏳ Pendent de ${llibre.posseidor?.nom}`;
             cBoto = esMeuPos ? "bg-green-600 hover:bg-green-700" : "bg-gray-200 text-gray-500";
@@ -489,7 +481,15 @@ export default function Biblioteca() {
                 {llibre.posseidor?.nom && <p className="flex justify-between text-indigo-600"><span>👤 El té</span><span className="font-bold">{llibre.posseidor?.nom}</span></p>}
                 {llibre.reservat_per?.nom && <p className="flex justify-between text-amber-600 border-t pt-2"><span>🕒 En cua</span><span className="font-bold">{llibre.reservat_per?.nom}</span></p>}
               </div>
-
+              {/* BOTÓN DE CANCELAR (Solo aparece si tú lo has pedido y está pendiente) */}
+              {llibre.estat === 'demanat' && llibre.sollicitant_email?.toLowerCase() === userEmail?.toLowerCase() && (
+                <button 
+                  onClick={() => cancelarPeticio(llibre.id)} 
+                  className="w-full py-2 bg-red-50 text-red-600 text-[10px] font-bold uppercase rounded-xl border border-red-100 hover:bg-red-100 transition-all"
+                >
+                  Anul·lar la meva petició
+                </button>
+              )}
               <div className="flex gap-2">
                 <button disabled={desc} onClick={() => gestionarAccioLlibre(llibre)} className={`flex-grow py-3 rounded-2xl font-bold text-white transition-all active:scale-95 ${cBoto} ${desc ? 'opacity-50 cursor-not-allowed' : ''}`}>{tBoto}</button>
                 {currentUser?.id === llibre.propietari_id && (
