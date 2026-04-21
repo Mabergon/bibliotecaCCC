@@ -145,17 +145,26 @@ export default function Biblioteca() {
   };
 
   const cancelarPeticio = async (llibreId: string) => {
+    // Primer busquem el llibre per saber-ne el títol pel log
+    const llibreACancelar = llibres.find(l => l.id === llibreId);
+    if (!llibreACancelar) return;
+    if (!window.confirm(`Vols cancel·lar la petició de "${llibreACancelar.titol}"?`)) return;
+
     try {
       const { error } = await supabase
         .from('llibres')
         .update({ 
           estat: 'disponible', 
+          posseidor_id: null,
           sollicitant_email: null // Esborrem qui l'havia demanat
         })
         .eq('id', llibreId);
 
       if (error) throw error;
       
+      await registrarActivitat('CANCEL·LACIÓ', `Ha anul·lat la petició de: ${llibreACancelar.titol}`);
+      const quiHoFa = nouNom || userEmail || 'Un usuari';
+      await enviarEmail(llibreACancelar, 'CANCEL·LACIÓ', quiHoFa);
       // Actualitzem l'estat local perquè la interfície canviï a l'instant
       setLlibres(llibres.map(llibre => 
         llibre.id === llibreId 
