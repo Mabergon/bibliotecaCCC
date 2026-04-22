@@ -580,7 +580,10 @@ export default function Biblioteca() {
             ) : (
               // --- MODE LLISTA (Compacte per a iPhone) ---
               <div key={llibre.id} 
-                className="relative flex items-center justify-between p-3 bg-white border-b border-gray-100 hover:bg-indigo-50 transition-colors">
+                className={`relative flex items-center justify-between p-3 border-b border-gray-100 transition-colors 
+                  ${llibre.propietari_id === currentUser?.id ? 'bg-red-50  border-red-200 ring-1 ring-red-200' : 'bg-white hover:bg-indigo-50'}`}
+              >
+
                 {/* 1. MENÚ DESPLEGABLE (Part esquerra de la llista) */}
                 {currentUser?.id === llibre.propietari_id && (
                   <div className="mr-2">
@@ -630,8 +633,8 @@ export default function Biblioteca() {
                     {llibre.estat === 'demanat' && llibre.sollicitant_email === userEmail && (
                       <button
                         onClick={() => cancelarPeticio(llibre.id)}
-                        className="ml-2 px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold uppercase rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
-                      >
+                        className="ml-2 px-3 py-1 bg-red-600 text-white text-[10px] font-bold uppercase rounded-lg border hover:bg-red-700 transition-all shadow-md"
+                  >
                         Anul·lar petició
                       </button>
                     )}
