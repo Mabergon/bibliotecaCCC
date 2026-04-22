@@ -467,10 +467,14 @@ export default function Biblioteca() {
           return (
             viewMode === 'grid' ? (
             // --- MODE FITXA (El que ja tens) ---
-            <div key={llibre.id} className={`w-full p-4 md:p-6 rounded-[1.5rem] shadow-sm border transition-all ${llibre.propietari_id === currentUser?.id ? 'bg-red-50 border-red-200 ring-1 ring-red-200' : 'bg-white border-gray-100'}`}>
+            <div key={llibre.id} 
+              className={`relative w-full p-4 md:p-6 rounded-[1.5rem] shadow-sm border transition-all ${
+                llibre.propietari_id === currentUser?.id 
+                  ? 'bg-red-50 border-red-200 ring-1 ring-red-200' 
+                  : 'bg-white border-gray-100'}`}>
               {/* BOTÓ DE MENÚ (Cantonada Superior Esquerra) */}
                 {currentUser?.id === llibre.propietari_id && (
-                  <div className="absolute top-3 left-3 z-20">
+                  <div className="absolute top-4 left-4 z-30">
                     <button 
                       onClick={() => setMenuObert(menuObert === llibre.id ? null : llibre.id)}
                       className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 border border-gray-200 shadow-sm hover:bg-white transition-all text-gray-500"
@@ -508,7 +512,7 @@ export default function Biblioteca() {
                     )}
                   </div>
                 )}
-                            
+              {/* 2. CAPÇALERA D'ETIQUETES (Justify-end per deixar espai al menú) */}              
               <div className="flex items-center justify-between gap-2 mb-4 w-full">
                 {/* Contenidor esquerre per a l'etiqueta blava */}
                 <div>
@@ -524,6 +528,7 @@ export default function Biblioteca() {
                     {llibre.estat}
                 </span>
               </div>
+              {/* 3. TÍTOL I AUTOR (Amb marge superior per no solapar el menú) */}
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-xl font-bold text-gray-800">{llibre.titol}</h3>
@@ -531,13 +536,13 @@ export default function Biblioteca() {
                 </div>
 
               </div>
-
+              {/* 4. QUADRE D'INFORMACIÓ */}
               <div className="bg-white/50 p-4 rounded-2xl text-[11px] space-y-2 mb-6 border border-black/5">
                 <p className="flex justify-between"><span>🏠 Propietari</span><span className="font-bold">{llibre.propietari?.nom || 'Anònim'}</span></p>
                 {llibre.posseidor?.nom && <p className="flex justify-between text-indigo-600"><span>👤 El té</span><span className="font-bold">{llibre.posseidor?.nom}</span></p>}
                 {llibre.reservat_per?.nom && <p className="flex justify-between text-amber-600 border-t pt-2"><span>🕒 En cua</span><span className="font-bold">{llibre.reservat_per?.nom}</span></p>}
               </div>
-              {/* BOTÓN DE CANCELAR (Solo aparece si tú lo has pedido y está pendiente) */}
+              {/* 5. BOTONS D'ACCIÓ */}
               {llibre.estat === 'demanat' && llibre.sollicitant_email?.toLowerCase() === userEmail?.toLowerCase() && (
                 <div className="flex gap-2">
                   <button 
@@ -548,12 +553,6 @@ export default function Biblioteca() {
                   </button>
                 </div>
               )}
-              <div className="flex gap-2">
-                <button disabled={desc} onClick={() => gestionarAccioLlibre(llibre)} className={`flex-grow py-3 rounded-2xl font-bold text-white transition-all active:scale-95 ${cBoto} ${desc ? 'opacity-50 cursor-not-allowed' : ''}`}>{tBoto}</button>
-                {currentUser?.id === llibre.propietari_id && (
-                  <button onClick={() => eliminarLlibre(llibre)} className="px-4 py-3 bg-white text-red-500 rounded-2xl border border-red-100 hover:bg-red-500 hover:text-white transition-all">🗑️</button>
-                )}
-              </div>
             </div>
             ) : (
               // --- MODE LLISTA (Compacte per a iPhone) ---
