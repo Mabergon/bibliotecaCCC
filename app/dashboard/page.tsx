@@ -570,7 +570,7 @@ export default function Biblioteca() {
                 {llibre.estat === 'demanat' && llibre.sollicitant_email?.toLowerCase() === userEmail?.toLowerCase() && (
                   <button
                     onClick={() => cancelarPeticio(llibre.id)}
-                    className="w-full py-2 bg-red-50 text-red-600 text-[10px] font-bold uppercase rounded-xl border border-red-100 hover:bg-red-100 transition-all"
+                    className="w-full py-2 bg-red-600 text-white text-[10px] font-bold uppercase rounded-xl hover:bg-red-700 transition-all shadow-md"
                   >
                     Anul·lar la meva petició
                   </button>
