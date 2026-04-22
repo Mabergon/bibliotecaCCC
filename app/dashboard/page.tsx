@@ -514,19 +514,25 @@ export default function Biblioteca() {
                   </div>
                 )}
               {/* 2. CAPÇALERA D'ETIQUETES (Justify-end per deixar espai al menú) */}              
-              <div className="flex items-center justify-between gap-2 mb-4 w-full">
-                {/* Contenidor esquerre per a l'etiqueta blava */}
-                <div>
-                    {llibre.posseidor_id === currentUser?.id && llibre.propietari_id !== currentUser?.id && (
-                    <span className="text-[9px] font-black uppercase px-2 py-1 bg-red-600 text-white rounded-lg shadow-sm animate-pulse">
-                        L'ESTÀS LLEGINT TU 📖
-                    </span>
-                    )}
-                </div>
+              <div className="flex items-center justify-end gap-2 mb-4 w-full h-8">
+                {/* CAS 1: L'has demanat però encara no has confirmat la recollida */}
+                {llibre.estat === 'demanat' && llibre.sollicitant_email?.toLowerCase() === userEmail?.toLowerCase() && (
+                  <span className="text-[9px] font-black uppercase px-2 py-1 bg-yellow-400 text-white rounded-lg shadow-sm animate-pulse">
+                    DEMANAT PER TU ⏳
+                  </span>
+                )}
+
+                {/* CAS 2: Ja has confirmat la recollida i el tens tu (Prestat) */}
+                {llibre.estat === 'prestat' && llibre.posseidor_id === currentUser?.id && llibre.propietari_id !== currentUser?.id && (
+                  <span className="text-[9px] font-black uppercase px-2 py-1 bg-red-600 text-white rounded-lg shadow-sm">
+                    L'ESTÀS LLEGINT TU 📖
+                  </span>
+                )}
+
                 <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg border ${
                     colorsEstats[llibre.estat] || "bg-gray-100 text-gray-500 border-gray-200"
                 }`}>
-                    {llibre.estat}
+                  {llibre.estat}
                 </span>
               </div>
               {/* 3. TÍTOL I AUTOR (Amb marge superior per no solapar el menú) */}
@@ -618,6 +624,25 @@ export default function Biblioteca() {
                     )}
                   </div>
                 )}
+                <div className="flex items-center gap-2 ml-4">
+                  {/* Etiqueta groga si està pendent */}
+                  {llibre.estat === 'demanat' && llibre.sollicitant_email?.toLowerCase() === userEmail?.toLowerCase() && (
+                    <span className="text-[8px] font-bold px-2 py-1 bg-yellow-400 text-white rounded-full">
+                      ESPERANT ⏳
+                    </span>
+                  )}
+
+                  {/* Etiqueta vermella si ja el tens */}
+                  {llibre.estat === 'prestat' && llibre.posseidor_id === currentUser?.id && llibre.propietari_id !== currentUser?.id && (
+                    <span className="text-[8px] font-bold px-2 py-1 bg-red-600 text-white rounded-full">
+                      EL TINC 📖
+                    </span>
+                  )}
+
+                  <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${colorsEstats[llibre.estat]}`}>
+                    {llibre.estat}
+                  </span>
+                </div>
                 {/* 2. INFO DEL LLIBRE */}
                 <div className="flex-grow min-w-0">
                   <h3 className="font-bold text-sm truncate">{llibre.titol}</h3>
