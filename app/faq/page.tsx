@@ -10,6 +10,14 @@ export default function FAQ() {
       </header>
 
       <div className="space-y-8">
+
+        <section>
+          <h3 className="font-bold text-lg text-gray-800 mb-2">Com funciona el préstec?</h3>
+          <p className="text-gray-600 leading-relaxed">
+            Demanas el llibre i t'has de posar en contacte amb el posseïdor actual.
+          </p>
+        </section>
+
         <section>
           <h3 className="font-bold text-lg text-gray-800 mb-2">Com funciona el sistema de cua?</h3>
           <p className="text-gray-600 leading-relaxed">
@@ -28,12 +36,38 @@ export default function FAQ() {
         </section>
 
         <section>
+          <h3 className="font-bold text-lg text-gray-800 mb-2">Puc afegir llibres?</h3>
+          <p className="text-gray-600 leading-relaxed">
+            Sí, tothom pot afegir llibres. Només has d'omplir el formulari.
+          </p>
+        </section>
+
+        <section>
           <h3 className="font-bold text-lg text-gray-800 mb-2">Puc eliminar llibres?</h3>
           <p className="text-gray-600 leading-relaxed">
             Només si ets el <strong>propietari</strong> (qui el va afegir originalment). 
             Veuràs una icona de paperera 🗑️ a la fitxa del llibre si és teu.
           </p>
         </section>
+
+        <section>
+          <h3 className="font-bold text-lg text-gray-800 mb-2">No m'arriba el correu?</h3>
+          <p className="text-gray-600 leading-relaxed">
+            Revisa la carpeta de Spam o correu brossa.
+          </p>
+        </section>
+
+        <section>
+          <h3 className="font-bold text-lg text-gray-800 mb-2">No puc entrar o tinc dubtes?</h3>
+          <p className="text-gray-600 leading-relaxed">
+            Pots contactar amb nosaltres directament a:
+          </p>
+          <a href="mailto:bibliotecacccolonia@gmail.com" className="text-indigo-600 hover:underline">
+            bibliotecacccolonia@gmail.com
+          </a>
+         
+        </section>
+
       </div>
 
       <div className="mt-16 pt-8 border-t border-gray-100">
