@@ -31,6 +31,7 @@ export default function Biblioteca() {
   const [filtres, setFiltres] = useState<string[]>(['meus', 'disponibles', 'altres'])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [menuObert, setMenuObert] = useState<string | null>(null);
 
   // --- LÒGICA DE FILTRES (MULTISELECCIÓ) ---
   const toggleFiltre = (id: string) => {
@@ -467,6 +468,47 @@ export default function Biblioteca() {
             viewMode === 'grid' ? (
             // --- MODE FITXA (El que ja tens) ---
             <div key={llibre.id} className={`w-full p-4 md:p-6 rounded-[1.5rem] shadow-sm border transition-all ${llibre.propietari_id === currentUser?.id ? 'bg-red-50 border-red-200 ring-1 ring-red-200' : 'bg-white border-gray-100'}`}>
+              {/* BOTÓ DE MENÚ (Cantonada Superior Esquerra) */}
+                {currentUser?.id === llibre.propietari_id && (
+                  <div className="absolute top-3 left-3 z-20">
+                    <button 
+                      onClick={() => setMenuObert(menuObert === llibre.id ? null : llibre.id)}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 border border-gray-200 shadow-sm hover:bg-white transition-all text-gray-500"
+                    >
+                      <span className="text-lg font-bold">⋮</span>
+                    </button>
+
+                    {/* DESPLEGABLE D'OPCIONS */}
+                    {menuObert === llibre.id && (
+                      <>
+                        {/* Capa invisible per tancar el menú si es clica a fora */}
+                        <div className="fixed inset-0 z-10" onClick={() => setMenuObert(null)}></div>
+                        
+                        <div className="absolute left-0 mt-1 w-40 bg-white border border-gray-100 shadow-xl rounded-xl z-30 py-1 overflow-hidden animate-in fade-in zoom-in duration-150">
+                          <button 
+                            onClick={() => {
+                              alert("Funció de modificar en desenvolupament"); 
+                              setMenuObert(null);
+                            }}
+                            className="w-full text-left px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2"
+                          >
+                            <span>✏️</span> Modificar llibre
+                          </button>
+                          <button 
+                            onClick={() => {
+                              eliminarLlibre(llibre);
+                              setMenuObert(null);
+                            }}
+                            className="w-full text-left px-4 py-2 text-xs font-semibold text-red-500 hover:bg-red-50 flex items-center gap-2 border-t border-gray-50"
+                          >
+                            <span>🗑️</span> Eliminar llibre
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+                            
               <div className="flex items-center justify-between gap-2 mb-4 w-full">
                 {/* Contenidor esquerre per a l'etiqueta blava */}
                 <div>
