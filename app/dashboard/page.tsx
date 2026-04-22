@@ -639,9 +639,6 @@ export default function Biblioteca() {
                     </span>
                   )}
 
-                  <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${colorsEstats[llibre.estat]}`}>
-                    {llibre.estat}
-                  </span>
                 </div>
                 {/* 2. INFO DEL LLIBRE */}
                 <div className="flex-grow min-w-0">
