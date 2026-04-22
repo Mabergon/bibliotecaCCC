@@ -487,7 +487,7 @@ export default function Biblioteca() {
                       <>
                         {/* Capa invisible per tancar el menú si es clica a fora */}
                         <div className="fixed inset-0 z-10" onClick={() => setMenuObert(null)}></div>
-                        
+                        /*
                         <div className="absolute left-0 mt-1 w-40 bg-white border border-gray-100 shadow-xl rounded-xl z-30 py-1 overflow-hidden animate-in fade-in zoom-in duration-150">
                           <button 
                             onClick={() => {
@@ -498,6 +498,7 @@ export default function Biblioteca() {
                           >
                             <span>✏️</span> Modificar llibre
                           </button>
+                          */
                           <button 
                             onClick={() => {
                               eliminarLlibre(llibre);
@@ -556,11 +557,48 @@ export default function Biblioteca() {
             </div>
             ) : (
               // --- MODE LLISTA (Compacte per a iPhone) ---
-              <div key={llibre.id} className="flex items-center justify-between p-3 bg-white border-b border-gray-100 hover:bg-indigo-50 transition-colors">
+              <div key={llibre.id} 
+                className="relative flex items-center justify-between p-3 bg-white border-b border-gray-100 hover:bg-indigo-50 transition-colors">
+                {/* 1. MENÚ DESPLEGABLE (Part esquerra de la llista) */}
+                {currentUser?.id === llibre.propietari_id && (
+                  <div className="mr-2">
+                    <button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setMenuObert(menuObert === llibre.id ? null : llibre.id);
+                      }}
+                      className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors text-gray-400"
+                    >
+                      <span className="text-lg font-bold mb-1">⋮</span>
+                    </button>
+
+                    {menuObert === llibre.id && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setMenuObert(null)}></div>
+                        <div className="absolute left-10 mt-[-10px] w-44 bg-white border border-gray-100 shadow-xl rounded-2xl z-40 py-2 overflow-hidden animate-in fade-in zoom-in duration-150">
+                          <button 
+                            onClick={() => { alert("Modificar..."); setMenuObert(null); }}
+                            className="w-full text-left px-4 py-3 text-xs font-bold text-gray-600 hover:bg-indigo-50 flex items-center gap-2"
+                          >
+                            <span>✏️</span> Modificar llibre
+                          </button>
+                          <button 
+                            onClick={() => { eliminarLlibre(llibre); setMenuObert(null); }}
+                            className="w-full text-left px-4 py-3 text-xs font-bold text-red-500 hover:bg-red-50 flex items-center gap-2 border-t border-gray-50"
+                          >
+                            <span>🗑️</span> Eliminar llibre
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+                {/* 2. INFO DEL LLIBRE */}
                 <div className="flex-grow min-w-0">
                   <h3 className="font-bold text-sm truncate">{llibre.titol}</h3>
                   <p className="text-xs text-gray-400 truncate">{llibre.autor}</p>
                 </div>
+                {/* 3. ESTATS I ACCIONS */}
                 <div className="flex items-center gap-2 ml-4">
                   <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${colorsEstats[llibre.estat]}`}>
                     {llibre.estat}
@@ -595,16 +633,6 @@ export default function Biblioteca() {
                       )}
                     </button>
 
-                    
-                    {/* Botó d'eliminar opcional si ets el propietari en mode llista */}
-                    {currentUser?.id === llibre.propietari_id && (
-                      <button 
-                        onClick={() => eliminarLlibre(llibre)}
-                        className="p-2.5 bg-red-50 text-red-500 rounded-xl border border-red-100"
-                      >
-                        🗑️
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>
