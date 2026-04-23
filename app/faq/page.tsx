@@ -14,14 +14,14 @@ export default function FAQ() {
         <section>
           <h3 className="font-bold text-lg text-gray-800 mb-2">Com funciona el préstec?</h3>
           <p className="text-gray-600 leading-relaxed">
-            Has de demanar el llibre i tot seguit posar-te en contacte amb la persona que el té en prèstec.
+            Has de demanar el llibre i tot seguit posar-te en contacte amb la persona que el té en préstec.
           </p>
         </section>
 
         <section>
           <h3 className="font-bold text-lg text-gray-800 mb-2">Com funciona "posar-me en cua" ?</h3>
           <p className="text-gray-600 leading-relaxed">
-            Si un llibre que t'interessa ja està en prèstec, pots clicar a <strong>"Posar-me en cua"</strong>. 
+            Si un llibre que t'interessa ja està en préstec, pots clicar a <strong>"Posar-me en cua"</strong>. 
             Quan la persona que el té ja l'ha llegit i el marca com a retornat, el sistema et marcarà a tu automàticament com la persona que el té 
             <strong> "Demanat"</strong>.
           </p>
